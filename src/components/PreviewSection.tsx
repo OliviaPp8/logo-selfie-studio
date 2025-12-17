@@ -1,4 +1,4 @@
-import { ImageIcon, Download, Share2, Sparkles, Loader2 } from "lucide-react";
+import { ImageIcon, Download, Share2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Company } from "./CompanySelector";
 
@@ -7,7 +7,6 @@ interface PreviewSectionProps {
   company: Company | null;
   generatedImage: string | null;
   isGenerating: boolean;
-  onGenerate: () => void;
 }
 
 const PreviewSection = ({
@@ -15,9 +14,7 @@ const PreviewSection = ({
   company,
   generatedImage,
   isGenerating,
-  onGenerate,
 }: PreviewSectionProps) => {
-  const canGenerate = !!photo && !!company?.templateUrl;
 
   const handleDownload = () => {
     if (!generatedImage) return;
@@ -101,42 +98,21 @@ const PreviewSection = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 mt-4">
-        {!generatedImage ? (
+      {generatedImage && (
+        <div className="flex gap-3 mt-4">
           <Button
             className="flex-1 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
-            disabled={!canGenerate || isGenerating}
-            onClick={onGenerate}
-            title={!company?.templateUrl && company ? 'Template not available for this company yet' : ''}
+            onClick={handleDownload}
           >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                {!company?.templateUrl && company ? 'Template Coming Soon' : 'Generate AI Composite'}
-              </>
-            )}
+            <Download className="w-4 h-4 mr-2" />
+            Download
           </Button>
-        ) : (
-          <>
-            <Button
-              className="flex-1 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
-              onClick={handleDownload}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
-            <Button variant="outline" className="flex-1" onClick={handleShare}>
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-          </>
-        )}
-      </div>
+          <Button variant="outline" className="flex-1" onClick={handleShare}>
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
