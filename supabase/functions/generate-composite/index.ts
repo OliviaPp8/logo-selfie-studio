@@ -5,9 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// TODO: Replace with actual uploaded template image URL
-const TEMPLATE_PHOTO_URL = "PLACEHOLDER_TEMPLATE_URL";
-
 const COMPOSITE_PROMPT = `**[任务指令]**
 
 请参考我上传的两张图片，执行一项专业级的人物替换与背景合成任务。你的核心目标是让用户完美替代原模特，保持原有的构图比例，并且**严格保留目标场景中除非人物以外的所有原始元素**。
@@ -48,7 +45,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userPhoto, companyName } = await req.json();
+    const { userPhoto, companyName, templateUrl } = await req.json();
 
     if (!userPhoto) {
       return new Response(
@@ -57,9 +54,9 @@ serve(async (req) => {
       );
     }
 
-    if (TEMPLATE_PHOTO_URL === "PLACEHOLDER_TEMPLATE_URL") {
+    if (!templateUrl) {
       return new Response(
-        JSON.stringify({ error: 'Template photo not configured yet. Please upload a template image.' }),
+        JSON.stringify({ error: 'Template not available for this company yet.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -100,7 +97,7 @@ serve(async (req) => {
               {
                 type: 'image_url',
                 image_url: {
-                  url: TEMPLATE_PHOTO_URL
+                  url: templateUrl
                 }
               }
             ]

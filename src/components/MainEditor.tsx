@@ -11,11 +11,12 @@ const MainEditor = () => {
   const { isLoading, generatedImage, generateComposite, clearGeneratedImage } = useGenerateComposite();
 
   const handleGenerate = async () => {
-    if (!photo) return;
+    if (!photo || !selectedCompany?.templateUrl) return;
     
     await generateComposite({
       userPhoto: photo,
-      companyName: selectedCompany?.name || 'Unknown'
+      companyName: selectedCompany.name,
+      templateUrl: selectedCompany.templateUrl
     });
   };
 

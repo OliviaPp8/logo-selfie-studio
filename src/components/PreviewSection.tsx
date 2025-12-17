@@ -17,7 +17,7 @@ const PreviewSection = ({
   isGenerating,
   onGenerate,
 }: PreviewSectionProps) => {
-  const canGenerate = !!photo;
+  const canGenerate = !!photo && !!company?.templateUrl;
 
   const handleDownload = () => {
     if (!generatedImage) return;
@@ -107,6 +107,7 @@ const PreviewSection = ({
             className="flex-1 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
             disabled={!canGenerate || isGenerating}
             onClick={onGenerate}
+            title={!company?.templateUrl && company ? 'Template not available for this company yet' : ''}
           >
             {isGenerating ? (
               <>
@@ -116,7 +117,7 @@ const PreviewSection = ({
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Generate AI Composite
+                {!company?.templateUrl && company ? 'Template Coming Soon' : 'Generate AI Composite'}
               </>
             )}
           </Button>
