@@ -5,19 +5,25 @@ import { toast } from "sonner";
 interface GenerateCompositeParams {
   userPhoto: string;
   companyName: string;
+  templateUrl: string;
 }
 
 export const useGenerateComposite = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
-  const generateComposite = async ({ userPhoto, companyName }: GenerateCompositeParams) => {
+  const generateComposite = async ({ userPhoto, companyName, templateUrl }: GenerateCompositeParams) => {
     setIsLoading(true);
     setGeneratedImage(null);
 
     try {
+      // Convert relative template URL to absolute URL
+      const absoluteTemplateUrl = templateUrl.startsWith('http') 
+        ? templateUrl 
+        : `${window.location.origin}${templateUrl}`;
+
       const { data, error } = await supabase.functions.invoke('generate-composite', {
-        body: { userPhoto, companyName }
+        body: { userPhoto, companyName, templateUrl: absoluteTemplateUrl }
       });
 
       if (error) {
