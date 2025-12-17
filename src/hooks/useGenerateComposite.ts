@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 interface GenerateCompositeParams {
   userPhoto: string;
-  templatePhoto: string;
   companyName: string;
 }
 
@@ -12,13 +11,13 @@ export const useGenerateComposite = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
-  const generateComposite = async ({ userPhoto, templatePhoto, companyName }: GenerateCompositeParams) => {
+  const generateComposite = async ({ userPhoto, companyName }: GenerateCompositeParams) => {
     setIsLoading(true);
     setGeneratedImage(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-composite', {
-        body: { userPhoto, templatePhoto, companyName }
+        body: { userPhoto, companyName }
       });
 
       if (error) {

@@ -1,35 +1,26 @@
 import { useState } from "react";
 import PhotoUploader from "./PhotoUploader";
-import TemplateUploader from "./TemplateUploader";
 import CompanySelector, { type Company } from "./CompanySelector";
 import PreviewSection from "./PreviewSection";
 import { useGenerateComposite } from "@/hooks/useGenerateComposite";
 
 const MainEditor = () => {
   const [photo, setPhoto] = useState<string | null>(null);
-  const [templatePhoto, setTemplatePhoto] = useState<string | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   
   const { isLoading, generatedImage, generateComposite, clearGeneratedImage } = useGenerateComposite();
 
   const handleGenerate = async () => {
-    if (!photo || !templatePhoto) return;
+    if (!photo) return;
     
     await generateComposite({
       userPhoto: photo,
-      templatePhoto: templatePhoto,
       companyName: selectedCompany?.name || 'Unknown'
     });
   };
 
-  // Clear generated image when inputs change
   const handlePhotoChange = (newPhoto: string | null) => {
     setPhoto(newPhoto);
-    clearGeneratedImage();
-  };
-
-  const handleTemplateChange = (newTemplate: string | null) => {
-    setTemplatePhoto(newTemplate);
     clearGeneratedImage();
   };
 
@@ -42,12 +33,11 @@ const MainEditor = () => {
             <div className="bg-card rounded-2xl p-6 shadow-card border border-border/50">
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                 <span className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center text-primary-foreground text-sm font-bold">1</span>
-                Upload Photos
+                Upload & Select
               </h2>
               
               <div className="space-y-6">
                 <PhotoUploader onPhotoChange={handlePhotoChange} />
-                <TemplateUploader onTemplateChange={handleTemplateChange} />
                 <CompanySelector 
                   onSelect={setSelectedCompany} 
                   selectedCompany={selectedCompany}
@@ -60,7 +50,6 @@ const MainEditor = () => {
               <h3 className="font-semibold text-primary mb-3">💡 Pro Tips</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>• Use a full-body, front-facing photo for best results</li>
-                <li>• Template should have a clear model position</li>
                 <li>• Photos with plain backgrounds work better</li>
                 <li>• AI will match lighting and perspective automatically</li>
               </ul>
@@ -77,7 +66,6 @@ const MainEditor = () => {
               
               <PreviewSection 
                 photo={photo} 
-                templatePhoto={templatePhoto}
                 company={selectedCompany}
                 generatedImage={generatedImage}
                 isGenerating={isLoading}
