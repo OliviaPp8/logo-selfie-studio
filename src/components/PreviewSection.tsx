@@ -4,7 +4,6 @@ import type { Company } from "./CompanySelector";
 
 interface PreviewSectionProps {
   photo: string | null;
-  templatePhoto: string | null;
   company: Company | null;
   generatedImage: string | null;
   isGenerating: boolean;
@@ -13,14 +12,12 @@ interface PreviewSectionProps {
 
 const PreviewSection = ({
   photo,
-  templatePhoto,
   company,
   generatedImage,
   isGenerating,
   onGenerate,
 }: PreviewSectionProps) => {
-  const canGenerate = photo && templatePhoto;
-  const hasPreview = photo || templatePhoto;
+  const canGenerate = !!photo;
 
   const handleDownload = () => {
     if (!generatedImage) return;
@@ -37,7 +34,6 @@ const PreviewSection = ({
     if (!generatedImage) return;
     
     try {
-      // Convert base64 to blob for sharing
       const response = await fetch(generatedImage);
       const blob = await response.blob();
       const file = new File([blob], 'composite.png', { type: 'image/png' });
@@ -48,7 +44,6 @@ const PreviewSection = ({
           title: 'My AI Composite',
         });
       } else {
-        // Fallback: copy to clipboard or show toast
         await navigator.clipboard.writeText(generatedImage);
       }
     } catch (err) {
@@ -81,31 +76,16 @@ const PreviewSection = ({
               <p className="text-sm mt-1">This may take a moment</p>
             </div>
           </div>
-        ) : hasPreview ? (
-          <div className="w-full h-full min-h-[400px] flex items-center justify-center gap-4 p-4">
-            {photo && (
-              <div className="flex flex-col items-center gap-2">
-                <img
-                  src={photo}
-                  alt="Your photo"
-                  className="h-40 w-auto object-contain rounded-lg shadow-card"
-                />
-                <span className="text-xs text-muted-foreground">Your Photo</span>
-              </div>
-            )}
-            {photo && templatePhoto && (
-              <div className="text-2xl text-muted-foreground">+</div>
-            )}
-            {templatePhoto && (
-              <div className="flex flex-col items-center gap-2">
-                <img
-                  src={templatePhoto}
-                  alt="Template"
-                  className="h-40 w-auto object-contain rounded-lg shadow-card"
-                />
-                <span className="text-xs text-muted-foreground">Template</span>
-              </div>
-            )}
+        ) : photo ? (
+          <div className="w-full h-full min-h-[400px] flex items-center justify-center p-4">
+            <div className="flex flex-col items-center gap-2">
+              <img
+                src={photo}
+                alt="Your photo"
+                className="h-60 w-auto object-contain rounded-lg shadow-card"
+              />
+              <span className="text-xs text-muted-foreground">Your Photo</span>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4 text-muted-foreground p-8">
@@ -114,7 +94,7 @@ const PreviewSection = ({
             </div>
             <div className="text-center">
               <p className="font-medium text-foreground">Your preview will appear here</p>
-              <p className="text-sm mt-1">Upload your photo and a template to get started</p>
+              <p className="text-sm mt-1">Upload a photo and select a company to get started</p>
             </div>
           </div>
         )}

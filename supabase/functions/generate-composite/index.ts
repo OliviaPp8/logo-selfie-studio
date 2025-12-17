@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// TODO: Replace with actual uploaded template image URL
+const TEMPLATE_PHOTO_URL = "PLACEHOLDER_TEMPLATE_URL";
+
 const COMPOSITE_PROMPT = `**[任务指令]**
 
 请参考我上传的两张图片，执行一项专业级的人物替换与背景合成任务。你的核心目标是让用户完美替代原模特，保持原有的构图比例，并且**严格保留目标场景中除非人物以外的所有原始元素**。
@@ -40,17 +43,23 @@ const COMPOSITE_PROMPT = `**[任务指令]**
 生成的照片中只能有用户自己单独站在该背景中。其大小、比例和构图完美复刻了原照片的风格。**背景场景（包括所有前景物品和背景细节）必须与原图完全一致，未发生任何改变**，看起来完全真实自然。`;
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { userPhoto, templatePhoto, companyName } = await req.json();
+    const { userPhoto, companyName } = await req.json();
 
-    if (!userPhoto || !templatePhoto) {
+    if (!userPhoto) {
       return new Response(
-        JSON.stringify({ error: 'Both user photo and template photo are required' }),
+        JSON.stringify({ error: 'User photo is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (TEMPLATE_PHOTO_URL === "PLACEHOLDER_TEMPLATE_URL") {
+      return new Response(
+        JSON.stringify({ error: 'Template photo not configured yet. Please upload a template image.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -91,7 +100,7 @@ serve(async (req) => {
               {
                 type: 'image_url',
                 image_url: {
-                  url: templatePhoto
+                  url: TEMPLATE_PHOTO_URL
                 }
               }
             ]
@@ -128,7 +137,6 @@ serve(async (req) => {
     const data = await response.json();
     console.log('AI response received successfully');
 
-    // Extract the generated image from the response
     const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (!generatedImage) {
