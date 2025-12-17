@@ -13,16 +13,15 @@ interface Company {
 }
 
 const companies: Company[] = [
-  { id: "google", name: "Google", color: "#4285F4" },
-  { id: "apple", name: "Apple", color: "#000000" },
-  { id: "meta", name: "Meta", color: "#0668E1" },
-  { id: "amazon", name: "Amazon", color: "#FF9900" },
-  { id: "microsoft", name: "Microsoft", color: "#00A4EF" },
-  { id: "tesla", name: "Tesla", color: "#CC0000" },
-  { id: "nvidia", name: "NVIDIA", color: "#76B900" },
-  { id: "netflix", name: "Netflix", color: "#E50914" },
-  { id: "openai", name: "OpenAI", color: "#412991" },
-  { id: "spacex", name: "SpaceX", color: "#005288" },
+  { id: "binance", name: "Binance", color: "#F0B90B" },
+  { id: "spacex", name: "Space X", color: "#005288" },
+  { id: "bnbchain", name: "BNB Chain", color: "#F0B90B" },
+  { id: "solana", name: "Solana", color: "#9945FF" },
+  { id: "yzilabs", name: "Yzi Labs", color: "#1E90FF" },
+  { id: "ycombinator", name: "Y Combinator", color: "#FF6600" },
+  { id: "a16z", name: "A16Z", color: "#000000" },
+  { id: "hyperliquid", name: "Hyperliquid", color: "#00D4AA" },
+  { id: "aster", name: "Aster", color: "#7C3AED" },
 ];
 
 interface CompanySelectorProps {
