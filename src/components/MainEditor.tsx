@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PhotoUploader from "./PhotoUploader";
 import CompanySelector, { type Company } from "./CompanySelector";
 import PreviewSection from "./PreviewSection";
@@ -46,6 +48,26 @@ const MainEditor = () => {
               </div>
             </div>
             
+            {/* Generate Button */}
+            <Button
+              className="w-full h-12 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
+              disabled={!photo || !selectedCompany?.templateUrl || isLoading}
+              onClick={handleGenerate}
+              title={!selectedCompany?.templateUrl && selectedCompany ? 'Template not available for this company yet' : ''}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {!selectedCompany?.templateUrl && selectedCompany ? 'Template Coming Soon' : 'Generate AI Composite'}
+                </>
+              )}
+            </Button>
+            
             {/* Tips Card */}
             <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20">
               <h3 className="font-semibold text-primary mb-3">💡 Pro Tips</h3>
@@ -70,7 +92,6 @@ const MainEditor = () => {
                 company={selectedCompany}
                 generatedImage={generatedImage}
                 isGenerating={isLoading}
-                onGenerate={handleGenerate}
               />
             </div>
           </div>
