@@ -1,0 +1,59 @@
+import { useState } from "react";
+import PhotoUploader from "./PhotoUploader";
+import CompanySelector, { type Company } from "./CompanySelector";
+import PreviewSection from "./PreviewSection";
+
+const MainEditor = () => {
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+
+  return (
+    <section className="pb-20 px-4">
+      <div className="container mx-auto max-w-6xl">
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Panel - Controls */}
+          <div className="space-y-6 animate-slide-up animation-delay-300">
+            <div className="bg-card rounded-2xl p-6 shadow-card border border-border/50">
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center text-primary-foreground text-sm font-bold">1</span>
+                Upload & Select
+              </h2>
+              
+              <div className="space-y-6">
+                <PhotoUploader onPhotoChange={setPhoto} />
+                <CompanySelector 
+                  onSelect={setSelectedCompany} 
+                  selectedCompany={selectedCompany}
+                />
+              </div>
+            </div>
+            
+            {/* Tips Card */}
+            <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20">
+              <h3 className="font-semibold text-primary mb-3">💡 Pro Tips</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Use a full-body, front-facing photo for best results</li>
+                <li>• Photos with plain backgrounds work better</li>
+                <li>• Try different poses for more fun compositions</li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Right Panel - Preview */}
+          <div className="animate-slide-up animation-delay-300">
+            <div className="bg-card rounded-2xl p-6 shadow-card border border-border/50 sticky top-24">
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center text-primary-foreground text-sm font-bold">2</span>
+                Your Creation
+              </h2>
+              
+              <PreviewSection photo={photo} company={selectedCompany} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default MainEditor;
