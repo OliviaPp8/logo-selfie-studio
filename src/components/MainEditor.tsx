@@ -63,7 +63,7 @@ const MainEditor = () => {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {!selectedCompany?.templateUrl && selectedCompany ? 'Template Coming Soon' : 'Generate AI Composite'}
+                  {!selectedCompany?.templateUrl && selectedCompany ? 'Template Coming Soon' : 'Create My AI BinanceLife Photo'}
                 </>
               )}
             </Button>
