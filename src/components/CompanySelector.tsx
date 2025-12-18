@@ -6,50 +6,30 @@ interface Company {
   templateUrl: string;
 }
 const companies: Company[] = [{
-  id: "binance",
-  name: "Binance",
+  id: "binance-exchange",
+  name: "Binance Exchange",
   color: "#F0B90B",
-  templateUrl: "/templates/binance.jpg"
-}, {
-  id: "spacex",
-  name: "Space X",
-  color: "#005288",
-  templateUrl: "/templates/spacex.jpg"
+  templateUrl: "/templates/binance-exchange.jpeg"
 }, {
   id: "bnbchain",
   name: "BNB Chain",
   color: "#F0B90B",
   templateUrl: "/templates/bnbchain.jpg"
 }, {
-  id: "solana",
-  name: "Solana",
-  color: "#9945FF",
-  templateUrl: "/templates/solana.jpeg"
-}, {
   id: "yzilabs",
   name: "Yzi Labs",
-  color: "#1E90FF",
-  templateUrl: "/templates/yzilabs.jpeg"
-}, {
-  id: "ycombinator",
-  name: "Y Combinator",
-  color: "#FF6600",
-  templateUrl: "/templates/ycombinator.jpeg"
-}, {
-  id: "a16z",
-  name: "A16Z",
-  color: "#000000",
-  templateUrl: ""
-}, {
-  id: "hyperliquid",
-  name: "Hyperliquid",
-  color: "#00D4AA",
-  templateUrl: "/templates/hyperliquid.jpg"
+  color: "#F0B90B",
+  templateUrl: "/templates/yzilabs.png"
 }, {
   id: "aster",
   name: "Aster",
-  color: "#7C3AED",
-  templateUrl: ""
+  color: "#F0B90B",
+  templateUrl: "/templates/aster.jpg"
+}, {
+  id: "binance-blockchain-week",
+  name: "Binance Blockchain Week",
+  color: "#F0B90B",
+  templateUrl: "/templates/binance-blockchain-week.jpg"
 }];
 interface CompanySelectorProps {
   onSelect: (company: Company | null) => void;
