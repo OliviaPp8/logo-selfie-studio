@@ -3,7 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // CORS headers setup for handling cross-origin requests
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 // The detailed composite prompt (Prompt 内容保持不变)
@@ -40,11 +41,15 @@ const COMPOSITE_PROMPT = `
  * Fetch an image from a URL, detect its MIME type, and convert it to raw Base64.
  * Returns an object containing both the mimeType and the base64 data.
  */
-async function fetchImageAndDetectType(url: string): Promise<{ mimeType: string; base64: string }> {
+async function fetchImageAndDetectType(
+  url: string
+): Promise<{ mimeType: string; base64: string }> {
   console.log(`Downloading template image from: ${url}`);
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch template image. Status: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch template image. Status: ${response.status} ${response.statusText}`
+    );
   }
 
   // 1. 动态获取 Content-Type
@@ -81,19 +86,25 @@ serve(async (req) => {
       });
     }
     if (!templateUrl) {
-      return new Response(JSON.stringify({ error: "Template not available." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Template not available." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
     if (!GOOGLE_API_KEY) {
       console.error("CRITICAL: GOOGLE_API_KEY is not set.");
-      return new Response(JSON.stringify({ error: "AI service configuration error." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "AI service configuration error." }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     console.log(`Processing request for: ${companyName || "Unknown"}`);
@@ -104,13 +115,17 @@ serve(async (req) => {
 
     if (userPhoto.startsWith("data:")) {
       // 使用正则提取真实的 MIME type
-      const matches = userPhoto.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+      const matches = userPhoto.match(
+        /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/
+      );
       if (matches && matches.length === 3) {
         userMimeType = matches[1];
         userPhotoRawBase64 = matches[2];
         console.log(`Detected user photo MIME type: ${userMimeType}`);
       } else {
-        console.warn("Could not parse user photo data URI correctly, falling back to default jpeg treatment.");
+        console.warn(
+          "Could not parse user photo data URI correctly, falling back to default jpeg treatment."
+        );
         // Fallback for simple split if regex fails, though less accurate
         userPhotoRawBase64 = userPhoto.split(",")[1];
       }
@@ -125,13 +140,24 @@ serve(async (req) => {
       console.error("Error downloading template image:", fetchError);
       return new Response(
         JSON.stringify({
-          error: `Failed to download template image: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`,
+          error: `Failed to download template image: ${
+            fetchError instanceof Error ? fetchError.message : "Unknown error"
+          }`,
         }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
-    console.log("Images prepared. Calling Google Gemini API...");
+    console.log(
+      "Images prepared. Calling Google Gemini API...",
+      userMimeType,
+      templateData.mimeType,
+      userPhotoRawBase64.slice(0, 30) + "...",
+      templateData.base64.slice(0, 30) + "..."
+    );
 
     // Call Google Gemini API
     const response = await fetch(
@@ -163,11 +189,8 @@ serve(async (req) => {
               ],
             },
           ],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"],
-          },
         }),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -177,16 +200,26 @@ serve(async (req) => {
       console.error(`Google API Error Response Body: ${errorText}`); // 这里会打印出 400 的具体原因
 
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Rate limit exceeded. Please try again later.",
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
       }
 
       // Return a more informative error to the client if possible, or stick to generic
       return new Response(
-        JSON.stringify({ error: `AI service failed with status ${response.status}. Check backend logs for details.` }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          error: `AI service failed with status ${response.status}. Check backend logs for details.`,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -199,7 +232,9 @@ serve(async (req) => {
     if (parts && Array.isArray(parts)) {
       for (const part of parts) {
         if (part.inline_data && part.inline_data.data) {
-          console.log(`Found generated image. MimeType: ${part.inline_data.mime_type}`);
+          console.log(
+            `Found generated image. MimeType: ${part.inline_data.mime_type}`
+          );
           generatedImageDataUri = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
           break; // Found image, stop searching
         }
@@ -209,11 +244,17 @@ serve(async (req) => {
     if (!generatedImageDataUri) {
       console.error(
         "Google API response OK, but no image found in output:",
-        JSON.stringify(data).substring(0, 200) + "...",
+        JSON.stringify(data).substring(0, 200) + "..."
       );
       return new Response(
-        JSON.stringify({ error: "AI successfully responded but did not generate an image. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          error:
+            "AI successfully responded but did not generate an image. Please try again.",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
       );
     }
 
@@ -222,13 +263,21 @@ serve(async (req) => {
         image: generatedImageDataUri,
         message: "Image generated successfully",
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Unhandled error in Edge Function:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "An unexpected error occurred" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });
