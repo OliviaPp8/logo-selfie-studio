@@ -30,6 +30,11 @@ const companies: Company[] = [{
   name: "Binance Blockchain Week",
   color: "#F0B90B",
   templateUrl: "/templates/binance-blockchain-week.jpg"
+}, {
+  id: "cn-community",
+  name: "币安华语社区 CN community",
+  color: "#F0B90B",
+  templateUrl: "/templates/cn-community.jpeg"
 }];
 interface CompanySelectorProps {
   onSelect: (company: Company | null) => void;
@@ -48,7 +53,7 @@ const CompanySelector = ({
       
       <Select value={selectedCompany?.id || ""} onValueChange={handleValueChange}>
         <SelectTrigger className="w-full h-12 bg-background border-border hover:border-primary/50 transition-colors">
-          <SelectValue placeholder="Choose a tech giant..." />
+          <SelectValue placeholder="Choose a Binance icon..." />
         </SelectTrigger>
         <SelectContent className="bg-popover border-border">
           {companies.map(company => <SelectItem key={company.id} value={company.id} className="cursor-pointer hover:bg-muted focus:bg-muted">
