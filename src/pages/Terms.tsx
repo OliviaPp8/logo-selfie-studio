@@ -1,12 +1,15 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
 const Terms = () => {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-bold text-foreground mb-8">Terms & Conditions</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-8 mx-0 my-[19px]">
+
+
+
+
+Terms & Conditions</h1>
         
         {/* Disclaimer Section */}
         <section className="mb-12">
@@ -102,8 +105,6 @@ const Terms = () => {
         </section>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Terms;
