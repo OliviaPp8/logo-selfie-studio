@@ -179,10 +179,13 @@ serve(async (req) => {
 
     if (parts && Array.isArray(parts)) {
       for (const part of parts) {
-        if (part.inline_data && part.inline_data.data) {
+        // 兼容 Google API 返回的两种格式：inlineData (camelCase) 和 inline_data (snake_case)
+        const imageData = part.inlineData || part.inline_data;
+        if (imageData && imageData.data) {
           // Found image data, reconstruct standard Data URI format
-          console.log(`Found generated image. MimeType: ${part.inline_data.mime_type}`);
-          generatedImageDataUri = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+          const mimeType = imageData.mimeType || imageData.mime_type || 'image/png';
+          console.log(`Found generated image. MimeType: ${mimeType}`);
+          generatedImageDataUri = `data:${mimeType};base64,${imageData.data}`;
         } else if (part.text) {
           textContent += part.text + ' ';
         }
