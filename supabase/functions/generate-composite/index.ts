@@ -122,9 +122,9 @@ serve(async (req) => {
 
     console.log(`Images prepared. User photo MIME type: ${userPhotoMimeType}. Calling Google Gemini API...`);
 
-    // 3. Call Google Gemini API - 使用 gemini-2.0-flash-preview-image-generation 模型
+    // 3. Call Google Gemini API - 使用最新的 gemini-2.0-flash-exp 模型（官方推荐的多模态图像生成模型）
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_API_KEY}`,
       {
         method: 'POST',
         headers: {
