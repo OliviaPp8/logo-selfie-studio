@@ -112,12 +112,19 @@ serve(async (req) => {
         );
     }
 
-    console.log('Images prepared. Calling Google Gemini API...');
+    // 检测用户图片的 MIME 类型
+    let userPhotoMimeType = "image/jpeg";
+    if (userPhoto.startsWith('data:image/png')) {
+      userPhotoMimeType = "image/png";
+    } else if (userPhoto.startsWith('data:image/webp')) {
+      userPhotoMimeType = "image/webp";
+    }
 
-    // 3. Call Google Gemini API (Experimental Endpoint for Image Generation)
-    // 注意：这是一个实验性端点，将来可能会更改。
+    console.log(`Images prepared. User photo MIME type: ${userPhotoMimeType}. Calling Google Gemini API...`);
+
+    // 3. Call Google Gemini API - 使用 gemini-2.0-flash-preview-image-generation 模型
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${GOOGLE_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -128,22 +135,20 @@ serve(async (req) => {
             parts: [
               { text: COMPOSITE_PROMPT },
               {
-                inline_data: {
-                  // Assuming JPEG for simplicity. Gemini is usually lenient here.
-                  mime_type: "image/jpeg",
+                inlineData: {
+                  mimeType: userPhotoMimeType,
                   data: userPhotoRawBase64
                 }
               },
               {
-                inline_data: {
-                  mime_type: "image/jpeg",
+                inlineData: {
+                  mimeType: "image/jpeg",
                   data: templateRawBase64
                 }
               }
             ]
           }],
           generationConfig: {
-            // Required configuration for this experimental model to output images
             responseModalities: ["TEXT", "IMAGE"]
           }
         }),
