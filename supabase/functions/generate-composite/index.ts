@@ -1,4 +1,3 @@
-```typescript
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // CORS headers setup for handling cross-origin requests
@@ -217,4 +216,3 @@ serve(async (req) => {
     );
   }
 });
-```
