@@ -54,6 +54,19 @@ async function fetchImageAsBase64(url: string): Promise<string> {
   return btoa(binary);
 }
 
+/**
+ * Helper function to detect MIME type from URL extension.
+ */
+function getMimeTypeFromUrl(url: string): string {
+  const ext = url.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'png': return 'image/png';
+    case 'webp': return 'image/webp';
+    case 'gif': return 'image/gif';
+    default: return 'image/jpeg';
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
@@ -82,11 +95,11 @@ serve(async (req) => {
     }
 
     // --- 关键点：获取 Supabase 中存储的环境变量 ---
-    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY2');
     if (!GOOGLE_API_KEY) {
-      console.error('CRITICAL: GOOGLE_API_KEY is not set in Supabase Edge Function Secrets.');
+      console.error('CRITICAL: GOOGLE_API_KEY2 is not set in Supabase Edge Function Secrets.');
       return new Response(
-        JSON.stringify({ error: 'AI service configuration error. Please contact support.' }), // Don't leak specific key errors to client
+        JSON.stringify({ error: 'AI service configuration error. Please contact support.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -142,7 +155,7 @@ serve(async (req) => {
               },
               {
                 inlineData: {
-                  mimeType: "image/jpeg",
+                  mimeType: getMimeTypeFromUrl(templateUrl),
                   data: templateRawBase64
                 }
               }
