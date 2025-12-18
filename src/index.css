@@ -15,36 +15,36 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
 
-    --primary: 340 82% 62%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 45 96% 50%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 260 60% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 40 90% 45%;
+    --secondary-foreground: 0 0% 5%;
 
-    --muted: 240 5% 92%;
-    --muted-foreground: 240 5% 45%;
+    --muted: 45 10% 92%;
+    --muted-foreground: 45 5% 40%;
 
-    --accent: 32 95% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 50 100% 55%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 340 82% 62%;
+    --border: 45 10% 88%;
+    --input: 45 10% 88%;
+    --ring: 45 96% 50%;
 
     --radius: 1rem;
 
-    /* Custom gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(340, 82%, 62%) 0%, hsl(280, 70%, 55%) 50%, hsl(220, 80%, 55%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(240, 20%, 98%) 100%);
-    --gradient-button: linear-gradient(135deg, hsl(340, 82%, 62%) 0%, hsl(280, 70%, 55%) 100%);
+    /* Custom gradients - Binance Yellow */
+    --gradient-hero: linear-gradient(135deg, hsl(45, 96%, 50%) 0%, hsl(40, 90%, 45%) 50%, hsl(35, 85%, 40%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(45, 20%, 98%) 100%);
+    --gradient-button: linear-gradient(135deg, hsl(45, 96%, 50%) 0%, hsl(40, 90%, 45%) 100%);
     
     /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(240 10% 10% / 0.1);
-    --shadow-glow: 0 0 40px hsl(340 82% 62% / 0.3);
-    --shadow-card: 0 8px 32px -8px hsl(240 10% 10% / 0.12);
+    --shadow-soft: 0 4px 20px -4px hsl(45 10% 10% / 0.1);
+    --shadow-glow: 0 0 40px hsl(45 96% 50% / 0.3);
+    --shadow-card: 0 8px 32px -8px hsl(45 10% 10% / 0.12);
   }
 
   .dark {
@@ -57,24 +57,24 @@
     --popover: 240 10% 12%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 340 82% 62%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 45 96% 50%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 260 60% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 40 90% 45%;
+    --secondary-foreground: 0 0% 5%;
 
-    --muted: 240 5% 18%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 45 5% 18%;
+    --muted-foreground: 45 5% 60%;
 
-    --accent: 32 95% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 50 100% 55%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 240 5% 20%;
-    --input: 240 5% 20%;
-    --ring: 340 82% 62%;
+    --border: 45 5% 20%;
+    --input: 45 5% 20%;
+    --ring: 45 96% 50%;
   }
 }
 
@@ -134,10 +134,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px hsl(340 82% 62% / 0.3);
+    box-shadow: 0 0 20px hsl(45 96% 50% / 0.3);
   }
   50% {
-    box-shadow: 0 0 40px hsl(340 82% 62% / 0.5);
+    box-shadow: 0 0 40px hsl(45 96% 50% / 0.5);
   }
 }
 
