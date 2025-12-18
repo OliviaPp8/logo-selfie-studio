@@ -27,11 +27,22 @@ const COMPOSITE_PROMPT = `
     *   **接触处理：** 重点处理用户身体边缘与保留下来的前景元素（如桌子边缘、地面）的融合，确保遮挡关系正确，脚部接地自然，没有悬浮感。
 5.  **水印添加（最终步骤）：**
     *   在图像合成与光影处理完全结束后，在画面的**底部中央**位置添加文字水印。
-    *   水印内容为：`Dev X: @0xOliviaPp`
+    *   水印内容为："Dev X: @0xOliviaPp"
     *   水印应清晰可见，字体风格简洁大方，颜色需根据背景色自动调整（例如深色背景用浅色字体，浅色背景用深色字体），以确保可读性且不破坏画面和谐。
 
 **[最终要求]**
-生成的照片中只能有用户自己单独站在该背景中。**用户的表情和姿势必须与提供的自拍照完全一致，不能采用背景图原模特的表情姿势。** 人物的大小、比例和整体构图完美复刻了原照片的风格。背景场景（包括所有前景物品和背景细节）必须与原图完全一致，未发生任何改变，看起来完全真实自然。**图像底部中央必须包含指定的文字水印 `Dev X: @0xOliviaPp`。**`;
+生成的照片中只能有用户自己单独站在该背景中。**用户的表情和姿势必须与提供的自拍照完全一致，不能采用背景图原模特的表情姿势。** 人物的大小、比例和整体构图完美复刻了原照片的风格。背景场景（包括所有前景物品和背景细节）必须与原图完全一致，未发生任何改变，看起来完全真实自然。**图像底部中央必须包含指定的文字水印 "Dev X: @0xOliviaPp"。**`;
+
+async function fetchImageAsBase64(url: string): Promise<string> {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  let binary = '';
+  for (let i = 0; i < uint8Array.length; i++) {
+    binary += String.fromCharCode(uint8Array[i]);
+  }
+  return btoa(binary);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -55,55 +66,63 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY is not configured');
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
+    if (!GOOGLE_API_KEY) {
+      console.error('GOOGLE_API_KEY is not configured');
       return new Response(
-        JSON.stringify({ error: 'AI service is not configured' }),
+        JSON.stringify({ error: 'AI service is not configured. Please add GOOGLE_API_KEY.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     console.log(`Processing composite request for company: ${companyName}`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: COMPOSITE_PROMPT
+    // Extract base64 data from user photo (remove data:image/...;base64, prefix if present)
+    let userPhotoBase64 = userPhoto;
+    if (userPhoto.startsWith('data:')) {
+      userPhotoBase64 = userPhoto.split(',')[1];
+    }
+
+    // Fetch template image and convert to base64
+    console.log('Fetching template image:', templateUrl);
+    const templateBase64 = await fetchImageAsBase64(templateUrl);
+
+    // Call Google Gemini API directly
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: COMPOSITE_PROMPT },
+              { 
+                inline_data: { 
+                  mime_type: "image/jpeg", 
+                  data: userPhotoBase64 
+                } 
               },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: userPhoto
-                }
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: templateUrl
-                }
+              { 
+                inline_data: { 
+                  mime_type: "image/jpeg", 
+                  data: templateBase64 
+                } 
               }
             ]
+          }],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"]
           }
-        ],
-        modalities: ['image', 'text']
-      }),
-    });
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
+      console.error('Google API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -111,27 +130,34 @@ serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits exhausted. Please add more credits.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
 
       return new Response(
-        JSON.stringify({ error: 'AI service error' }),
+        JSON.stringify({ error: 'AI service error: ' + errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await response.json();
-    console.log('AI response received successfully');
+    console.log('Google API response received successfully');
 
-    const generatedImage = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    // Parse Google's response format
+    const parts = data.candidates?.[0]?.content?.parts;
+    let generatedImage = null;
+    let textContent = '';
+
+    if (parts) {
+      for (const part of parts) {
+        if (part.inline_data) {
+          // Found image data
+          generatedImage = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+        } else if (part.text) {
+          textContent = part.text;
+        }
+      }
+    }
     
     if (!generatedImage) {
-      console.error('No image in AI response:', JSON.stringify(data));
+      console.error('No image in Google API response:', JSON.stringify(data));
       return new Response(
         JSON.stringify({ error: 'No image was generated. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -141,7 +167,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         image: generatedImage,
-        message: data.choices?.[0]?.message?.content || 'Image generated successfully'
+        message: textContent || 'Image generated successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
