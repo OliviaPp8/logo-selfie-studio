@@ -125,24 +125,16 @@ serve(async (req) => {
       console.error("Error downloading template image:", fetchError);
       return new Response(
         JSON.stringify({
-          error: `Failed to download template image: ${
-            fetchError instanceof Error ? fetchError.message : "Unknown error"
-          }`,
+          error: `Failed to download template image: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`,
         }),
-        {
-          status: 422,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    console.log(
-      "Images prepared. Calling Google Gemini API...",
-      userMimeType,
-      templateData.mimeType,
-      userPhotoRawBase64.slice(0, 30) + "...",
-      templateData.base64.slice(0, 30) + "...",
-    );
+    console.log("Images prepared. Calling Google Gemini API...");
+    console.log(userMimeType);
+    console.log(templateData.mimeType);
+    console.log(userPhotoRawBase64.slice(0, 30));
 
     // Call Google Gemini API
     const response = await fetch(
@@ -174,6 +166,9 @@ serve(async (req) => {
               ],
             },
           ],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"],
+          },
         }),
       },
     );
@@ -185,26 +180,16 @@ serve(async (req) => {
       console.error(`Google API Error Response Body: ${errorText}`); // 这里会打印出 400 的具体原因
 
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error: "Rate limit exceeded. Please try again later.",
-          }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       // Return a more informative error to the client if possible, or stick to generic
       return new Response(
-        JSON.stringify({
-          error: `AI service failed with status ${response.status}. Check backend logs for details.`,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        JSON.stringify({ error: `AI service failed with status ${response.status}. Check backend logs for details.` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -230,13 +215,8 @@ serve(async (req) => {
         JSON.stringify(data).substring(0, 200) + "...",
       );
       return new Response(
-        JSON.stringify({
-          error: "AI successfully responded but did not generate an image. Please try again.",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        JSON.stringify({ error: "AI successfully responded but did not generate an image. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -250,13 +230,8 @@ serve(async (req) => {
   } catch (error) {
     console.error("Unhandled error in Edge Function:", error);
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "An unexpected error occurred",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+      JSON.stringify({ error: error instanceof Error ? error.message : "An unexpected error occurred" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
