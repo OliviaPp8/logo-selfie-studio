@@ -1,10 +1,13 @@
+```typescript
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// CORS headers setup for handling cross-origin requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// The detailed composite prompt
 const COMPOSITE_PROMPT = `
 **[任务指令]**
 请参考我上传的两张图片，执行一项专业级的人物替换与背景合成任务。你的核心目标是将用户主体完美融入目标背景中。在此过程中，必须**严格保留用户自拍照中原有的面部表情和身体姿势**，同时保持原背景图的构图比例，并**严格保留目标场景中除非人物以外的所有原始元素**。最后，需要在生成图像的特定位置添加指定的文字水印。
@@ -33,26 +36,38 @@ const COMPOSITE_PROMPT = `
 **[最终要求]**
 生成的照片中只能有用户自己单独站在该背景中。**用户的表情和姿势必须与提供的自拍照完全一致，不能采用背景图原模特的表情姿势。** 人物的大小、比例和整体构图完美复刻了原照片的风格。背景场景（包括所有前景物品和背景细节）必须与原图完全一致，未发生任何改变，看起来完全真实自然。**图像底部中央必须包含指定的文字水印 "Dev X: @0xOliviaPp"。**`;
 
+/**
+ * Helper function to fetch an image from a URL and convert it to a raw Base64 string.
+ */
 async function fetchImageAsBase64(url: string): Promise<string> {
+  console.log(`Downloading template image from: ${url}`);
   const response = await fetch(url);
+  if (!response.ok) {
+      throw new Error(`Failed to fetch template image. Status: ${response.status} ${response.statusText}`);
+  }
   const arrayBuffer = await response.arrayBuffer();
   const uint8Array = new Uint8Array(arrayBuffer);
   let binary = '';
   for (let i = 0; i < uint8Array.length; i++) {
     binary += String.fromCharCode(uint8Array[i]);
   }
+  // Note: btoa is available generally in Deno/Web environments
   return btoa(binary);
 }
 
 serve(async (req) => {
+  // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Parse request body
     const { userPhoto, companyName, templateUrl } = await req.json();
 
+    // Basic validation
     if (!userPhoto) {
+      console.error('Missing userPhoto in request');
       return new Response(
         JSON.stringify({ error: 'User photo is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -60,34 +75,48 @@ serve(async (req) => {
     }
 
     if (!templateUrl) {
+      console.error('Missing templateUrl in request');
       return new Response(
         JSON.stringify({ error: 'Template not available for this company yet.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // --- 关键点：获取 Supabase 中存储的环境变量 ---
     const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
     if (!GOOGLE_API_KEY) {
-      console.error('GOOGLE_API_KEY is not configured');
+      console.error('CRITICAL: GOOGLE_API_KEY is not set in Supabase Edge Function Secrets.');
       return new Response(
-        JSON.stringify({ error: 'AI service is not configured. Please add GOOGLE_API_KEY.' }),
+        JSON.stringify({ error: 'AI service configuration error. Please contact support.' }), // Don't leak specific key errors to client
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Processing composite request for company: ${companyName}`);
+    console.log(`Processing composite request for company: ${companyName || 'Unknown'}`);
 
-    // Extract base64 data from user photo (remove data:image/...;base64, prefix if present)
-    let userPhotoBase64 = userPhoto;
+    // 1. Prepare User Photo Base64
+    // Remove the data URL prefix (e.g., "data:image/jpeg;base64,") if present, keep only raw base64 data.
+    let userPhotoRawBase64 = userPhoto;
     if (userPhoto.startsWith('data:')) {
-      userPhotoBase64 = userPhoto.split(',')[1];
+        userPhotoRawBase64 = userPhoto.split(',')[1];
     }
 
-    // Fetch template image and convert to base64
-    console.log('Fetching template image:', templateUrl);
-    const templateBase64 = await fetchImageAsBase64(templateUrl);
+    // 2. Fetch and Prepare Template Image Base64
+    let templateRawBase64: string;
+    try {
+        templateRawBase64 = await fetchImageAsBase64(templateUrl);
+    } catch (fetchError) {
+        console.error("Error downloading template image:", fetchError);
+        return new Response(
+            JSON.stringify({ error: `Failed to download template image: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}` }),
+            { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+    }
 
-    // Call Google Gemini API directly
+    console.log('Images prepared. Calling Google Gemini API...');
+
+    // 3. Call Google Gemini API (Experimental Endpoint for Image Generation)
+    // 注意：这是一个实验性端点，将来可能会更改。
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GOOGLE_API_KEY}`,
       {
@@ -99,31 +128,34 @@ serve(async (req) => {
           contents: [{
             parts: [
               { text: COMPOSITE_PROMPT },
-              { 
-                inline_data: { 
-                  mime_type: "image/jpeg", 
-                  data: userPhotoBase64 
-                } 
+              {
+                inline_data: {
+                  // Assuming JPEG for simplicity. Gemini is usually lenient here.
+                  mime_type: "image/jpeg",
+                  data: userPhotoRawBase64
+                }
               },
-              { 
-                inline_data: { 
-                  mime_type: "image/jpeg", 
-                  data: templateBase64 
-                } 
+              {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: templateRawBase64
+                }
               }
             ]
           }],
           generationConfig: {
+            // Required configuration for this experimental model to output images
             responseModalities: ["TEXT", "IMAGE"]
           }
         }),
       }
     );
 
+    // 4. Handle API Response Errors
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Google API error:', response.status, errorText);
-      
+      console.error(`Google API Error (${response.status}):`, errorText);
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
@@ -131,52 +163,58 @@ serve(async (req) => {
         );
       }
 
+      // Handle specific model errors (e.g., model not found, invalid arguments)
       return new Response(
-        JSON.stringify({ error: 'AI service error: ' + errorText }),
+        JSON.stringify({ error: `AI service failed with status ${response.status}. Check logs for details.` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const data = await response.json();
-    console.log('Google API response received successfully');
+    console.log('Google API response received successfully. Parsing result...');
 
-    // Parse Google's response format
+    // 5. Parse Google's Response Format to find the generated image
     const parts = data.candidates?.[0]?.content?.parts;
-    let generatedImage = null;
+    let generatedImageDataUri = null;
     let textContent = '';
 
-    if (parts) {
+    if (parts && Array.isArray(parts)) {
       for (const part of parts) {
-        if (part.inline_data) {
-          // Found image data
-          generatedImage = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
+        if (part.inline_data && part.inline_data.data) {
+          // Found image data, reconstruct standard Data URI format
+          console.log(`Found generated image. MimeType: ${part.inline_data.mime_type}`);
+          generatedImageDataUri = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
         } else if (part.text) {
-          textContent = part.text;
+          textContent += part.text + ' ';
         }
       }
     }
-    
-    if (!generatedImage) {
-      console.error('No image in Google API response:', JSON.stringify(data));
+
+    if (!generatedImageDataUri) {
+      console.error('Google API response format unexpected or no image generated:', JSON.stringify(data).substring(0, 500));
       return new Response(
-        JSON.stringify({ error: 'No image was generated. Please try again.' }),
+        JSON.stringify({ error: 'AI successfully responded but did not generate an image. Please try again with different photos.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('Successfully generated composite image.');
+    // 6. Return successful response to client
     return new Response(
-      JSON.stringify({ 
-        image: generatedImage,
-        message: textContent || 'Image generated successfully'
+      JSON.stringify({
+        image: generatedImageDataUri,
+        message: textContent.trim() || 'Image generated successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in generate-composite function:', error);
+    // Global error handler for unexpected crashes
+    console.error('Unhandled error in Edge Function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'An unexpected error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+```
