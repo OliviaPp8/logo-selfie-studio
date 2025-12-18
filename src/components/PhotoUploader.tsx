@@ -74,7 +74,8 @@ const PhotoUploader = ({ onPhotoChange }: PhotoUploaderProps) => {
   );
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const inputEl = e.currentTarget;
+    const file = inputEl.files?.[0];
     if (file) {
       try {
         toast.loading("Optimizing photo…", { id: "photo-opt" });
@@ -87,7 +88,7 @@ const PhotoUploader = ({ onPhotoChange }: PhotoUploaderProps) => {
         toast.error("Failed to process photo", { id: "photo-opt" });
       } finally {
         // allow selecting the same file again
-        e.currentTarget.value = "";
+        inputEl.value = "";
       }
     }
   };

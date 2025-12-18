@@ -87,9 +87,9 @@ serve(async (req) => {
       });
     }
 
-    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
+    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY2") || Deno.env.get("GOOGLE_API_KEY");
     if (!GOOGLE_API_KEY) {
-      console.error("CRITICAL: GOOGLE_API_KEY is not set.");
+      console.error("CRITICAL: GOOGLE_API_KEY2 (or fallback GOOGLE_API_KEY) is not set.");
       return new Response(JSON.stringify({ error: "AI service configuration error." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -197,14 +197,19 @@ serve(async (req) => {
     console.log("Google API response received. Parsing...");
 
     const parts = data.candidates?.[0]?.content?.parts;
-    let generatedImageDataUri = null;
+    let generatedImageDataUri: string | null = null;
 
     if (parts && Array.isArray(parts)) {
       for (const part of parts) {
-        if (part.inline_data && part.inline_data.data) {
-          console.log(`Found generated image. MimeType: ${part.inline_data.mime_type}`);
-          generatedImageDataUri = `data:${part.inline_data.mime_type};base64,${part.inline_data.data}`;
-          break; // Found image, stop searching
+        // Gemini responses can use either inlineData (camelCase) or inline_data (snake_case)
+        const inline = (part as any).inlineData || (part as any).inline_data;
+        const mimeType = inline?.mimeType || inline?.mime_type;
+        const b64 = inline?.data;
+
+        if (mimeType && b64) {
+          console.log(`Found generated image. MimeType: ${mimeType}`);
+          generatedImageDataUri = `data:${mimeType};base64,${b64}`;
+          break;
         }
       }
     }
@@ -212,7 +217,7 @@ serve(async (req) => {
     if (!generatedImageDataUri) {
       console.error(
         "Google API response OK, but no image found in output:",
-        JSON.stringify(data).substring(0, 200) + "...",
+        JSON.stringify(data).substring(0, 500) + "...",
       );
       return new Response(
         JSON.stringify({ error: "AI successfully responded but did not generate an image. Please try again." }),
