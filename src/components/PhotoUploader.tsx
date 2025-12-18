@@ -1,9 +1,50 @@
 import { useState, useCallback } from "react";
 import { Upload, X, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface PhotoUploaderProps {
   onPhotoChange: (photo: string | null) => void;
+}
+
+const MAX_DIMENSION = 1024; // keep uploads small enough for the AI image API
+const JPEG_QUALITY = 0.9;
+
+async function fileToOptimizedDataUrl(file: File): Promise<string> {
+  // Read as DataURL first
+  const originalDataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read image file"));
+    reader.readAsDataURL(file);
+  });
+
+  // If it's already small, keep it (avoid quality loss)
+  // Heuristic: data url length ~ base64 size; keep if under ~2.5MB
+  if (originalDataUrl.length < 2_500_000) return originalDataUrl;
+
+  // Decode into an image
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Failed to decode image"));
+    i.src = originalDataUrl;
+  });
+
+  const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+  const targetW = Math.max(1, Math.round(img.width * scale));
+  const targetH = Math.max(1, Math.round(img.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetW;
+  canvas.height = targetH;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported");
+
+  ctx.drawImage(img, 0, 0, targetW, targetH);
+
+  // Always output JPEG to reduce size and improve API compatibility
+  return canvas.toDataURL("image/jpeg", JPEG_QUALITY);
 }
 
 const PhotoUploader = ({ onPhotoChange }: PhotoUploaderProps) => {
@@ -11,34 +52,43 @@ const PhotoUploader = ({ onPhotoChange }: PhotoUploaderProps) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
 
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const result = event.target?.result as string;
+        try {
+          toast.loading("Optimizing photo…", { id: "photo-opt" });
+          const result = await fileToOptimizedDataUrl(file);
           setPhoto(result);
           onPhotoChange(result);
-        };
-        reader.readAsDataURL(file);
+          toast.success("Photo ready", { id: "photo-opt" });
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to process photo", { id: "photo-opt" });
+        }
       }
     },
     [onPhotoChange]
   );
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
+      try {
+        toast.loading("Optimizing photo…", { id: "photo-opt" });
+        const result = await fileToOptimizedDataUrl(file);
         setPhoto(result);
         onPhotoChange(result);
-      };
-      reader.readAsDataURL(file);
+        toast.success("Photo ready", { id: "photo-opt" });
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to process photo", { id: "photo-opt" });
+      } finally {
+        // allow selecting the same file again
+        e.currentTarget.value = "";
+      }
     }
   };
 
