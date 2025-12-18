@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -8,9 +9,14 @@ const Footer = () => {
           <p className="flex items-center gap-1">
             Made with <Heart className="w-4 h-4 text-primary fill-primary" /> for fun
           </p>
-          <p>
-            © {new Date().getFullYear()} LogoPhoto. All company logos belong to their respective owners.
-          </p>
+          <div className="flex items-center gap-4">
+            <Link to="/terms" className="hover:text-primary transition-colors">
+              Terms of Conditions
+            </Link>
+            <p>
+              © {new Date().getFullYear()} BinanceLife. All company logos belong to their respective owners.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
