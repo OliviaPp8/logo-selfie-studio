@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import PhotoUploader from "./PhotoUploader";
 import CompanySelector, { type Company } from "./CompanySelector";
 import PreviewSection from "./PreviewSection";
@@ -9,6 +11,7 @@ import { useGenerateComposite } from "@/hooks/useGenerateComposite";
 const MainEditor = () => {
   const [photo, setPhoto] = useState<string | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [withCZ, setWithCZ] = useState<boolean>(false);
   
   const { isLoading, generatedImage, generateComposite, clearGeneratedImage } = useGenerateComposite();
 
@@ -45,6 +48,21 @@ const MainEditor = () => {
                   onSelect={setSelectedCompany} 
                   selectedCompany={selectedCompany}
                 />
+                
+                {/* CZ Photo Option */}
+                <div className="flex items-center space-x-3 pt-2">
+                  <Checkbox 
+                    id="withCZ" 
+                    checked={withCZ}
+                    onCheckedChange={(checked) => setWithCZ(checked === true)}
+                  />
+                  <Label 
+                    htmlFor="withCZ" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    与 CZ 合影
+                  </Label>
+                </div>
               </div>
             </div>
             
