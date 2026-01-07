@@ -134,7 +134,6 @@ serve(async (req) => {
     console.log("Images prepared. Calling Google Gemini API...");
     console.log(userMimeType);
     console.log(templateData.mimeType);
-    console.log(userPhotoRawBase64.slice(0, 30));
 
     // Call Google Gemini API
     const response = await fetch(
