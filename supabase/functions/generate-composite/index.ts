@@ -135,6 +135,7 @@ serve(async (req) => {
     console.log(userMimeType);
     console.log(templateData.mimeType);
     console.log("using new api");
+    console.log("-----------");
 
     // Call Google Gemini API
     const response = await fetch(
