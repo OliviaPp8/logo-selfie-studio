@@ -1,10 +1,13 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 interface Company {
   id: string;
   name: string;
   color: string;
   templateUrl: string;
 }
+
 const companies: Company[] = [{
   id: "binance-exchange",
   name: "Binance Exchange",
@@ -36,37 +39,47 @@ const companies: Company[] = [{
   color: "#F0B90B",
   templateUrl: "/templates/cn-community.jpeg"
 }];
+
 interface CompanySelectorProps {
   onSelect: (company: Company | null) => void;
   selectedCompany: Company | null;
 }
+
 const CompanySelector = ({
   onSelect,
   selectedCompany
 }: CompanySelectorProps) => {
+  const { t } = useLanguage();
+  
   const handleValueChange = (value: string) => {
     const company = companies.find(c => c.id === value);
     onSelect(company || null);
   };
-  return <div className="w-full">
-      <label className="block text-sm font-medium mb-3 text-foreground">Select a project</label>
+
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-medium mb-3 text-foreground">
+        {t("editor.selectProject")}
+      </label>
       
       <Select value={selectedCompany?.id || ""} onValueChange={handleValueChange}>
         <SelectTrigger className="w-full h-12 bg-background border-border hover:border-primary/50 transition-colors">
-          <SelectValue placeholder="Choose a Binance icon..." />
+          <SelectValue placeholder={t("editor.selectPlaceholder")} />
         </SelectTrigger>
         <SelectContent className="bg-popover border-border">
-          {companies.map(company => <SelectItem key={company.id} value={company.id} className="cursor-pointer hover:bg-muted focus:bg-muted">
+          {companies.map(company => (
+            <SelectItem key={company.id} value={company.id} className="cursor-pointer hover:bg-muted focus:bg-muted">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full" style={{
-              backgroundColor: company.color
-            }} />
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: company.color }} />
                 <span>{company.name}</span>
               </div>
-            </SelectItem>)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
-    </div>;
+    </div>
+  );
 };
+
 export default CompanySelector;
 export type { Company };
