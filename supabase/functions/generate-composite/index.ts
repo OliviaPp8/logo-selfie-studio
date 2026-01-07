@@ -135,6 +135,7 @@ serve(async (req) => {
     console.log(userMimeType);
     console.log(templateData.mimeType);
     console.log("using new api");
+
     // Call Google Gemini API
     const response = await fetch(
       `https://llmapi.arcane-ai.net/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${GOOGLE_API_KEY}`,
