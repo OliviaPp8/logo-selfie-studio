@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import PhotoUploader from "./PhotoUploader";
 import CompanySelector, { type Company } from "./CompanySelector";
 import PreviewSection from "./PreviewSection";
@@ -10,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const MainEditor = () => {
   const [photo, setPhoto] = useState<string | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [withCZ, setWithCZ] = useState<boolean>(false);
   const { t } = useLanguage();
   
   const { isLoading, generatedImage, generateComposite, clearGeneratedImage } = useGenerateComposite();
@@ -48,6 +51,20 @@ const MainEditor = () => {
                   selectedCompany={selectedCompany}
                 />
                 
+                {/* CZ Photo Option */}
+                <div className="flex items-center space-x-3 pt-2">
+                  <Checkbox 
+                    id="withCZ" 
+                    checked={withCZ}
+                    onCheckedChange={(checked) => setWithCZ(checked === true)}
+                  />
+                  <Label 
+                    htmlFor="withCZ" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    {t("editor.withCZ")}
+                  </Label>
+                </div>
               </div>
             </div>
             
