@@ -23,7 +23,8 @@ const MainEditor = () => {
     await generateComposite({
       userPhoto: photo,
       companyName: selectedCompany.name,
-      templateUrl: selectedCompany.templateUrl
+      templateUrl: selectedCompany.templateUrl,
+      withCZ: withCZ
     });
   };
 
