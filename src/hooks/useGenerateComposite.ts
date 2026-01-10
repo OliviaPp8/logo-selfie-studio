@@ -2,11 +2,14 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type GenerateMode = "generate" | "vibe";
+
 interface GenerateCompositeParams {
   userPhoto: string;
   companyName: string;
   templateUrl: string;
   withCZ: boolean;
+  mode?: GenerateMode;
 }
 
 /**
@@ -30,7 +33,7 @@ export const useGenerateComposite = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
-  const generateComposite = async ({ userPhoto, companyName, templateUrl, withCZ }: GenerateCompositeParams) => {
+  const generateComposite = async ({ userPhoto, companyName, templateUrl, withCZ, mode = "generate" }: GenerateCompositeParams) => {
     setIsLoading(true);
     setGeneratedImage(null);
 
@@ -45,7 +48,7 @@ export const useGenerateComposite = () => {
       const templateBase64 = await fetchImageAsBase64(absoluteTemplateUrl);
 
       const { data, error } = await supabase.functions.invoke('generate-composite', {
-        body: { userPhoto, companyName, templatePhoto: templateBase64, withCZ }
+        body: { userPhoto, companyName, templatePhoto: templateBase64, withCZ, mode }
       });
 
       if (error) {

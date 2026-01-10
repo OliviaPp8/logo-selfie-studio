@@ -17,14 +17,15 @@ const MainEditor = () => {
   
   const { isLoading, generatedImage, generateComposite, clearGeneratedImage } = useGenerateComposite();
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (mode: "generate" | "vibe" = "generate") => {
     if (!photo || !selectedCompany?.templateUrl) return;
     
     await generateComposite({
       userPhoto: photo,
       companyName: selectedCompany.name,
       templateUrl: selectedCompany.templateUrl,
-      withCZ: withCZ
+      withCZ: withCZ,
+      mode: mode
     });
   };
 
@@ -74,7 +75,7 @@ const MainEditor = () => {
               <Button
                 className="flex-1 h-12 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
                 disabled={!photo || !selectedCompany?.templateUrl || isLoading}
-                onClick={handleGenerate}
+                onClick={() => handleGenerate("generate")}
                 title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
               >
                 {isLoading ? (
@@ -93,10 +94,20 @@ const MainEditor = () => {
               <Button
                 className="flex-1 h-12 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-opacity"
                 disabled={!photo || !selectedCompany?.templateUrl || isLoading}
+                onClick={() => handleGenerate("vibe")}
                 title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {t("editor.vibeButton")}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t("editor.generating")}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {t("editor.vibeButton")}
+                  </>
+                )}
               </Button>
             </div>
             
