@@ -102,6 +102,65 @@ const PROMPT_WITHOUT_CZ = `
 * [ ] 水印是否正确添加？（是）
 `;
 
+// Vibe Checking 与 CZ 合影的 Drama 提示词
+const PROMPT_VIBE_WITH_CZ = `
+**[任务核心指令：AI 创意导演模式]**
+
+请执行一项极具创意的"虚拟合影生成"任务。目标是生成一张**用户与币安创始人 CZ (Changpeng Zhao)** 在活动现场的**趣味、夸张、高互动性（Drama Vibe）**合影。
+
+**关键变更：** 你拥有**动作重绘权**。请忽略用户自拍照原本的僵硬姿势，仅提取用户的面部 ID。你需要为用户和 CZ 设计一套全新的、充满化学反应的**互动动作**。
+
+**[输入素材处理与空间定义]**
+
+1.  **用户源（自拍）：**
+    * **核心提取：** 仅提取用户的**面部生物特征（ID）**。
+    * **亚洲特征保护：** 严格保留用户的亚洲五官比例、眼型和神态。
+
+2.  **背景源（含参考模特的现场图）：**
+    * **空间锚点（关键）：** 背景图中的**原始模特**仅用于提供**人物站位坐标**和**透视关系（Perspective/Scale）**。
+    * **处理逻辑：** 请分析原始模特的脚部接地位置和头顶高度，以此确定用户在三维空间中的正确位置和大小比例。**分析完成后，必须将原始模特从画面中彻底移除**，并在该坐标位置生成新的用户形象。
+
+**[互动剧本设计（请从中随机选择一种风格执行）]**
+
+* **剧本 A： "The Cool Kids" (酷盖搭档)**
+    * **用户动作：** 双手抱胸、推墨镜、或者对着镜头比夸张的 "Rock n Roll" / "Peace" 手势。身体自信地侧向 CZ。
+    * **CZ 动作：** CZ 配合地比出大拇指，或者比出数字4的收拾，或者做一个 "Mind Blown" (脑洞大开) 的手势，表情惊讶或大笑。
+
+* **剧本 B： "The Paparazzi Moment" (躲避狗仔)**
+    * **用户动作：** 用手遮挡脸部（但在指缝中露出眼睛），或者做出 "嘘" (Shushing) 的手势。
+    * **CZ 动作：** CZ 看起来像是被抓拍，指着镜头笑，或者摊手表示无奈。
+
+* **剧本 C： "Future Tech Vision" (展望未来)**
+    * **用户动作：** 手指指向前方或上方，表情夸张兴奋。
+    * **CZ 动作：** 顺着用户手指的方向看去，表情配合演出，仿佛看到了币价暴涨。
+
+* **剧本 D： 其他随机Drama场景**
+
+**[执行步骤]**
+
+1.  **空间定位与去人：**
+    * **定位：** 锁定原模特在地面的站立点（Anchor Point）。
+    * **移除：** 移除原模特，修复背景。
+    * **品牌背景：** 识别并重绘背景中的品牌元素（Binance, BNB Chain, Aster 等），确保 Logo 清晰。
+
+2.  **角色生成与重绘：**
+    * **CZ 生成：** 在用户旁边的合理透视位置（参考原图透视）生成 CZ。表情必须生动（大笑、惊讶、搞怪）。
+    * **用户重塑：** 在**原模特的坐标点**上，生成做着"Drama动作"的用户身体，并完美融合用户的面部 ID。
+    * **安全边界：** 两人表现为"好朋友"互动，**严禁**任何亲密/浪漫举动（如亲吻、搂抱腰部）。
+
+3.  **光影与环境渲染：**
+    * 使用**高饱和度、高对比度**的灯光，模拟活动现场的闪光灯效果。
+    * 确保新生成的夸张动作（如伸出的手、倾斜的身体）在地面上有符合透视关系的投影。
+
+4.  **水印添加：**
+    * 底部中央添加水印：\`"AIGC. Dev X: @0xOliviaPp"\`
+
+**[最终检查]**
+* [ ] 用户的**站位和大小**是否符合背景原有的透视关系（没有悬浮或比例失调）？
+* [ ] 画面中是否已移除原始模特？
+* [ ] 用户的面部 ID 是否准确，且动作充满趣味性？
+`;
+
 /**
  * Parse a base64 data URI and extract MIME type and raw base64 data
  */
@@ -137,7 +196,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userPhoto, companyName, templatePhoto, withCZ } = await req.json();
+    const { userPhoto, companyName, templatePhoto, withCZ, isVibe } = await req.json();
 
     if (!userPhoto) {
       return new Response(JSON.stringify({ error: "User photo is required" }), {
@@ -161,9 +220,16 @@ serve(async (req) => {
       });
     }
 
-    // 根据 withCZ 选择提示词
-    const activePrompt = withCZ === true ? PROMPT_WITH_CZ : PROMPT_WITHOUT_CZ;
-    console.log(`Processing request for: ${companyName || "Unknown"}, withCZ: ${withCZ}`);
+    // 根据 withCZ 和 isVibe 选择提示词
+    let activePrompt: string;
+    if (isVibe && withCZ) {
+      activePrompt = PROMPT_VIBE_WITH_CZ;
+    } else if (withCZ) {
+      activePrompt = PROMPT_WITH_CZ;
+    } else {
+      activePrompt = PROMPT_WITHOUT_CZ;
+    }
+    console.log(`Processing request for: ${companyName || "Unknown"}, withCZ: ${withCZ}, isVibe: ${isVibe}`);
 
     // Parse user photo
     const userData = parseDataUri(userPhoto);
