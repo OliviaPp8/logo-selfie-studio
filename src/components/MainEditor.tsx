@@ -17,15 +17,13 @@ const MainEditor = () => {
   
   const { isLoading, generatedImage, generateComposite, clearGeneratedImage } = useGenerateComposite();
 
-  const handleGenerate = async (mode: "generate" | "vibe" = "generate") => {
+  const handleGenerate = async () => {
     if (!photo || !selectedCompany?.templateUrl) return;
     
     await generateComposite({
       userPhoto: photo,
       companyName: selectedCompany.name,
-      templateUrl: selectedCompany.templateUrl,
-      withCZ: withCZ,
-      mode: mode
+      templateUrl: selectedCompany.templateUrl
     });
   };
 
@@ -70,46 +68,25 @@ const MainEditor = () => {
               </div>
             </div>
             
-            {/* Generate Buttons */}
-            <div className="flex gap-3">
-              <Button
-                className="flex-1 h-12 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
-                disabled={!photo || !selectedCompany?.templateUrl || isLoading}
-                onClick={() => handleGenerate("generate")}
-                title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t("editor.generating")}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : t("editor.generateButton")}
-                  </>
-                )}
-              </Button>
-              
-              <Button
-                className="flex-1 h-12 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-opacity"
-                disabled={!photo || !selectedCompany?.templateUrl || isLoading}
-                onClick={() => handleGenerate("vibe")}
-                title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t("editor.generating")}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {t("editor.vibeButton")}
-                  </>
-                )}
-              </Button>
-            </div>
+            {/* Generate Button */}
+            <Button
+              className="w-full h-12 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
+              disabled={!photo || !selectedCompany?.templateUrl || isLoading}
+              onClick={handleGenerate}
+              title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t("editor.generating")}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : t("editor.generateButton")}
+                </>
+              )}
+            </Button>
             
             {/* Tips Card */}
             <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20">
