@@ -24,20 +24,7 @@ const MainEditor = () => {
       userPhoto: photo,
       companyName: selectedCompany.name,
       templateUrl: selectedCompany.templateUrl,
-      withCZ: withCZ,
-      isVibe: false
-    });
-  };
-
-  const handleVibeGenerate = async () => {
-    if (!photo || !selectedCompany?.templateUrl) return;
-    
-    await generateComposite({
-      userPhoto: photo,
-      companyName: selectedCompany.name,
-      templateUrl: selectedCompany.templateUrl,
-      withCZ: withCZ,
-      isVibe: true
+      withCZ: withCZ
     });
   };
 
@@ -105,21 +92,11 @@ const MainEditor = () => {
               
               <Button
                 className="flex-1 h-12 bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-opacity"
-                disabled={!photo || !selectedCompany?.templateUrl || isLoading || !withCZ}
-                onClick={handleVibeGenerate}
-                title={!withCZ ? 'Vibe Checking requires "Photo with CZ" to be enabled' : (!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : '')}
+                disabled={!photo || !selectedCompany?.templateUrl || isLoading}
+                title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t("editor.generating")}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {t("editor.vibeButton")}
-                  </>
-                )}
+                <Sparkles className="w-4 h-4 mr-2" />
+                {t("editor.vibeButton")}
               </Button>
             </div>
             

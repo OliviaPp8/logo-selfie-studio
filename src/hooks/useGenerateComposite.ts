@@ -7,7 +7,6 @@ interface GenerateCompositeParams {
   companyName: string;
   templateUrl: string;
   withCZ: boolean;
-  isVibe?: boolean;
 }
 
 /**
@@ -31,7 +30,7 @@ export const useGenerateComposite = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
-  const generateComposite = async ({ userPhoto, companyName, templateUrl, withCZ, isVibe = false }: GenerateCompositeParams) => {
+  const generateComposite = async ({ userPhoto, companyName, templateUrl, withCZ }: GenerateCompositeParams) => {
     setIsLoading(true);
     setGeneratedImage(null);
 
@@ -46,7 +45,7 @@ export const useGenerateComposite = () => {
       const templateBase64 = await fetchImageAsBase64(absoluteTemplateUrl);
 
       const { data, error } = await supabase.functions.invoke('generate-composite', {
-        body: { userPhoto, companyName, templatePhoto: templateBase64, withCZ, isVibe }
+        body: { userPhoto, companyName, templatePhoto: templateBase64, withCZ }
       });
 
       if (error) {
