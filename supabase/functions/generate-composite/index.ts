@@ -102,6 +102,63 @@ const PROMPT_WITHOUT_CZ = `
 * [ ] 水印是否正确添加？（是）
 `;
 
+// Vibe Checking 模式提示词（单人Drama主角版）
+const PROMPT_VIBE = `
+**[任务核心指令：AI 创意导演模式 - 单人主角版]**
+请执行一项极具视觉冲击力的"单人场景替换与动作重塑"任务。目标是将上传的**用户自拍形象**完美融入**目标背景图**中，并生成一张用户在活动现场**充满自信、夸张、戏剧张力（Drama Vibe）**的单人主角大片。
+
+**关键变更（导演权限）：**
+你拥有**动作重绘权**。请完全忽略用户自拍照原本的姿势（Pose），仅提取用户的面部 ID。你需要为用户设计一个全新的、充满"主角能量"的**高动态/夸张姿势**，使其主宰整个画面。
+
+**[风格定义：Social Media Spotlight]**
+* **氛围：** 这不是一张普通的打卡照，而是一张像是在红毯或顶级活动现场抓拍的"神图"。
+* **关键词：** Confident (自信), Dynamic (动态), Exaggerated (夸张), Main Character Energy (主角能量), Viral (网感).
+
+**[输入素材处理与空间定义]**
+1.  **用户源（自拍）：**
+    * **核心提取（ID锁定）：** 仅提取用户的**面部生物特征（ID）**。
+    * **亚洲特征保护（最高优先级）：** 严格保留用户的亚洲五官比例、眼型、骨相和神态，严禁欧美化或过度磨皮。
+    * **配饰保留：** 如果用户自拍中有墨镜、特殊的发饰或夸张的耳环，请务必在新的动作中保留这些增加 Drama 感的元素。
+2.  **背景源（含参考模特的现场图）：**
+    * **空间锚点（关键）：** 背景图中的**原始模特**仅用于提供**人物站位坐标**和**透视关系（Perspective/Scale）**参考。
+    * **处理逻辑：** 分析原模特的脚部位置和身高比例，确定用户在新画面中的三维空间坐标。**分析完成后，必须将原始模特彻底移除。**
+    * **品牌保护：** 严格识别并保护背景墙上的所有品牌元素（Binance, Aster, BNB Chain 等），确保 Logo 清晰锐利。
+
+**[单人 Drama 动作剧本（AI 请从中选择一种风格执行）]**
+
+* **剧本 A： "The Queen/King Arrives" (霸气登场)**
+    * **动作描述：** 自信的宽站位，双手叉腰，下巴微扬，眼神犀利地看向镜头（或略带不屑地看向侧面）。气场全开。
+* **剧本 B： "Look At This!" (夸张展示)**
+    * **动作描述：** 身体大幅度侧转，一只手夸张地指向身后背景墙上的Logo，表情极其兴奋或惊讶（张嘴大笑或 "Wow" 的表情）。
+* **剧本 C： "Vogue Moment" (时尚大片)**
+    * **动作描述：** 极具张力的肢体语言，例如一只手高举扶着后脑勺，另一只手插兜，身体呈现充满活力的线条感（S型或大角度倾斜）。
+* **剧本 D： 其他随机Drama动作**
+
+**[执行步骤]**
+
+1.  **空间清理与重建：**
+    * 移除原始模特。
+    * 完美修复被模特遮挡的背景墙区域，确保品牌 Logo 和墙面纹理完整、真实。
+
+2.  **主角生成与重绘（Director Mode）：**
+    * 在确定的**空间锚点**上，生成用户全新的"Drama 动作"身体。
+    * 将用户的面部 ID 完美融合到新身体上，确保头身比例协调，表情与动作的夸张程度匹配。
+
+3.  **戏剧化光影渲染（Stage Lighting）：**
+    * **拒绝平淡：** 不要使用均匀的漫射光。模拟活动现场的**聚光灯（Spotlight）**效果。
+    * **高光与轮廓：** 在用户的头发边缘、肩膀和肢体动作的受光面添加强烈的**轮廓光（Rim Light）**，使人物从背景中"跳脱"出来，增强立体感和戏剧感。
+    * 确保新动作在地面上有正确透视的投影。
+
+4.  **水印添加：**
+    * 底部中央添加水印：\`"AIGC. Dev X: @0xOliviaPp"\`
+
+**[最终检查]**
+* [ ] 画面中是否只剩下用户一人？
+* [ ] 用户的面部 ID 是否准确（未变形），且具有明显的亚洲特征？
+* [ ] 用户的姿势是否足够夸张、自信（Drama），而不是呆板站立？
+* [ ] 背景的品牌 Logo 是否清晰完整？
+`;
+
 /**
  * Parse a base64 data URI and extract MIME type and raw base64 data
  */
@@ -137,7 +194,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userPhoto, companyName, templatePhoto, withCZ } = await req.json();
+    const { userPhoto, companyName, templatePhoto, withCZ, mode } = await req.json();
 
     if (!userPhoto) {
       return new Response(JSON.stringify({ error: "User photo is required" }), {
@@ -161,9 +218,16 @@ serve(async (req) => {
       });
     }
 
-    // 根据 withCZ 选择提示词
-    const activePrompt = withCZ === true ? PROMPT_WITH_CZ : PROMPT_WITHOUT_CZ;
-    console.log(`Processing request for: ${companyName || "Unknown"}, withCZ: ${withCZ}`);
+    // 根据 mode 和 withCZ 选择提示词
+    let activePrompt: string;
+    if (mode === "vibe") {
+      // Vibe Checking 模式：仅支持单人 Drama 风格
+      activePrompt = PROMPT_VIBE;
+    } else {
+      // 普通生成模式：根据 withCZ 选择
+      activePrompt = withCZ === true ? PROMPT_WITH_CZ : PROMPT_WITHOUT_CZ;
+    }
+    console.log(`Processing request for: ${companyName || "Unknown"}, mode: ${mode}, withCZ: ${withCZ}`);
 
     // Parse user photo
     const userData = parseDataUri(userPhoto);
