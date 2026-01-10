@@ -27,7 +27,8 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.selectPlaceholder": "Choose a Binance icon...",
     "editor.withCZ": "Photo with CZ",
     "editor.generating": "Generating...",
-    "editor.generateButton": "Create My AI BinanceLife Photo",
+    "editor.generateButton": "Create AI BinanceLife Photo",
+    "editor.vibeChecking": "Vibe Checking",
     "editor.templateComingSoon": "Template Coming Soon",
     
     // Pro Tips
@@ -130,7 +131,8 @@ const translations: Record<Language, Record<string, string>> = {
     "editor.selectPlaceholder": "选择一个币安图标...",
     "editor.withCZ": "与 CZ 合影",
     "editor.generating": "生成中...",
-    "editor.generateButton": "生成我的币安人生照片",
+    "editor.generateButton": "生成币安人生照片",
+    "editor.vibeChecking": "Vibe一下",
     "editor.templateComingSoon": "模板即将推出",
     
     // Pro Tips
