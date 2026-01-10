@@ -103,30 +103,30 @@ const PROMPT_WITHOUT_CZ = `
 `;
 
 /**
- * Fetch an image from a URL, detect its MIME type, and convert it to raw Base64.
- * Returns an object containing both the mimeType and the base64 data.
+ * Parse a base64 data URI and extract MIME type and raw base64 data
  */
-async function fetchImageAndDetectType(url: string): Promise<{ mimeType: string; base64: string }> {
-  console.log(`Downloading template image from: ${url}`);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch template image. Status: ${response.status} ${response.statusText}`);
+function parseDataUri(dataUri: string): { mimeType: string; base64: string } {
+  if (dataUri.startsWith("data:")) {
+    const matches = dataUri.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+    if (matches && matches.length === 3) {
+      return {
+        mimeType: matches[1],
+        base64: matches[2],
+      };
+    }
+    // Fallback: try splitting by comma
+    const parts = dataUri.split(",");
+    if (parts.length === 2) {
+      return {
+        mimeType: "image/jpeg",
+        base64: parts[1],
+      };
+    }
   }
-
-  // 动态获取 Content-Type
-  const mimeType = response.headers.get("content-type") || "image/jpeg";
-  console.log(`Detected template image MIME type: ${mimeType}`);
-
-  const arrayBuffer = await response.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
-  let binary = "";
-  for (let i = 0; i < uint8Array.length; i++) {
-    binary += String.fromCharCode(uint8Array[i]);
-  }
-
+  // If not a data URI, assume it's raw base64
   return {
-    mimeType: mimeType,
-    base64: btoa(binary),
+    mimeType: "image/jpeg",
+    base64: dataUri,
   };
 }
 
@@ -137,7 +137,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userPhoto, companyName, templateUrl, withCZ } = await req.json();
+    const { userPhoto, companyName, templatePhoto, withCZ } = await req.json();
 
     if (!userPhoto) {
       return new Response(JSON.stringify({ error: "User photo is required" }), {
@@ -145,8 +145,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!templateUrl) {
-      return new Response(JSON.stringify({ error: "Template not available." }), {
+    if (!templatePhoto) {
+      return new Response(JSON.stringify({ error: "Template photo is required." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -165,38 +165,15 @@ serve(async (req) => {
     const activePrompt = withCZ === true ? PROMPT_WITH_CZ : PROMPT_WITHOUT_CZ;
     console.log(`Processing request for: ${companyName || "Unknown"}, withCZ: ${withCZ}`);
 
-    // 动态处理用户上传图片的 MIME Type
-    let userPhotoRawBase64 = userPhoto;
-    let userMimeType = "image/jpeg";
+    // Parse user photo
+    const userData = parseDataUri(userPhoto);
+    console.log(`User photo MIME: ${userData.mimeType}`);
 
-    if (userPhoto.startsWith("data:")) {
-      const matches = userPhoto.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
-      if (matches && matches.length === 3) {
-        userMimeType = matches[1];
-        userPhotoRawBase64 = matches[2];
-        console.log(`Detected user photo MIME type: ${userMimeType}`);
-      } else {
-        console.warn("Could not parse user photo data URI correctly, falling back to default jpeg treatment.");
-        userPhotoRawBase64 = userPhoto.split(",")[1];
-      }
-    }
-
-    // 动态处理模板图片的 MIME Type
-    let templateData: { mimeType: string; base64: string };
-    try {
-      templateData = await fetchImageAndDetectType(templateUrl);
-    } catch (fetchError) {
-      console.error("Error downloading template image:", fetchError);
-      return new Response(
-        JSON.stringify({
-          error: `Failed to download template image: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`,
-        }),
-        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    // Parse template photo (now sent as base64 from client)
+    const templateData = parseDataUri(templatePhoto);
+    console.log(`Template photo MIME: ${templateData.mimeType}`);
 
     console.log("Images prepared. Calling Google Gemini API...");
-    console.log(`User MIME: ${userMimeType}, Template MIME: ${templateData.mimeType}`);
     console.log(`Using prompt: ${withCZ ? "WITH_CZ" : "WITHOUT_CZ"}`);
 
     // Call Google Gemini API
@@ -214,8 +191,8 @@ serve(async (req) => {
                 { text: activePrompt },
                 {
                   inline_data: {
-                    mime_type: userMimeType,
-                    data: userPhotoRawBase64,
+                    mime_type: userData.mimeType,
+                    data: userData.base64,
                   },
                 },
                 {
