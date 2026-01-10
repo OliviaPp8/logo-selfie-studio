@@ -69,25 +69,34 @@ const MainEditor = () => {
               </div>
             </div>
             
-            {/* Generate Button */}
-            <Button
-              className="w-full h-12 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
-              disabled={!photo || !selectedCompany?.templateUrl || isLoading}
-              onClick={handleGenerate}
-              title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t("editor.generating")}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : t("editor.generateButton")}
-                </>
-              )}
-            </Button>
+            {/* Generate Buttons */}
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 h-12 gradient-button text-primary-foreground hover:opacity-90 transition-opacity"
+                disabled={!photo || !selectedCompany?.templateUrl || isLoading}
+                onClick={handleGenerate}
+                title={!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : ''}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t("editor.generating")}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {!selectedCompany?.templateUrl && selectedCompany ? t("editor.templateComingSoon") : t("editor.generateButton")}
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                className="h-12 px-6 border-primary/50 hover:bg-primary/10"
+                disabled={!photo || isLoading}
+              >
+                ✨ {t("editor.vibeChecking")}
+              </Button>
+            </div>
             
             {/* Tips Card */}
             <div className="bg-primary/5 rounded-2xl p-6 border border-primary/20">
