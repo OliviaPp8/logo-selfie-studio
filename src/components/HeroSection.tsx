@@ -11,9 +11,8 @@ const HeroSection = () => {
           <span className="text-sm font-medium">{t("hero.badge")}</span>
         </div>
         
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-slide-up animation-delay-100">
-          {t("hero.title1")}
-          <span className="bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-300 bg-clip-text text-transparent">{t("hero.title2")}</span>
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-slide-up animation-delay-100 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-300 bg-clip-text text-transparent">
+          {t("hero.title2")}
         </h1>
         
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-slide-up animation-delay-200">
