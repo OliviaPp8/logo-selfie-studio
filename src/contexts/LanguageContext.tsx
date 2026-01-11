@@ -119,8 +119,8 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Hero Section
     "hero.badge": "您的币安人生自拍AI生成器🤳",
-    "hero.title1": "与",
-    "hero.title2": "币安图标合影",
+    "hero.title1": "",
+    "hero.title2": "与币安Logo和人物合影",
     "hero.description": "上传您的全身照，与币安生态系统标志合影！非常适合社交媒体、表情包或纯粹的娱乐！",
     
     // Main Editor
