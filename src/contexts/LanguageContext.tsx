@@ -15,8 +15,8 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Hero Section
     "hero.badge": "Your Binance Life AI Photo Generator 🤳",
-    "hero.title1": "Take a Photo with",
-    "hero.title2": "Binance Icons",
+    "hero.title1": "",
+    "hero.title2": "Take Photos with Binance Icons & Figures",
     "hero.description": "Upload your full-body photo and pose next to binance ecosystem logos! Perfect for social media, memes, or just for fun!",
     
     // Main Editor
