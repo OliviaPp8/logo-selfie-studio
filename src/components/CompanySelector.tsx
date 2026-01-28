@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface Company {
   id: string;
   name: string;
+  nameKey?: string;
   color: string;
   templateUrl: string;
 }
@@ -40,7 +41,8 @@ const companies: Company[] = [{
   templateUrl: "/templates/cn-community.jpeg"
 }, {
   id: "binance-map",
-  name: "Binance Map 币安地图",
+  name: "Binance Map",
+  nameKey: "company.binanceMap",
   color: "#F0B90B",
   templateUrl: "/templates/binance-map.jpg"
 }];
@@ -76,7 +78,7 @@ const CompanySelector = ({
             <SelectItem key={company.id} value={company.id} className="cursor-pointer hover:bg-muted focus:bg-muted">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: company.color }} />
-                <span>{company.name}</span>
+                <span>{company.nameKey ? t(company.nameKey) : company.name}</span>
               </div>
             </SelectItem>
           ))}
