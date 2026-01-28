@@ -38,6 +38,11 @@ const companies: Company[] = [{
   name: "币安华语社区 CN community",
   color: "#F0B90B",
   templateUrl: "/templates/cn-community.jpeg"
+}, {
+  id: "binance-map",
+  name: "Binance Map 币安地图",
+  color: "#F0B90B",
+  templateUrl: "/templates/binance-map.jpg"
 }];
 
 interface CompanySelectorProps {
